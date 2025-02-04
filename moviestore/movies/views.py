@@ -2,6 +2,9 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from .models import Movie, Cart, Order
 
+def home(request):
+    return render(request, "movies/home.html")
+
 def index(request):
     movies = Movie.objects.all()
     return render(request, 'movies/index.html', {'movies': movies})
