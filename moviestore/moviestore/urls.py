@@ -3,5 +3,5 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('movies/', include('movies.urls')),  # Ensure movies is correctly routed
+    path('movies/', include('movies.urls')),  # Movies app routes
 ]

@@ -1,0 +1,5 @@
+<h2>Your Cart</h2>
+{% for item in cart_items %}
+    <p>{{ item.movie.title }} - ${{ item.movie.price }}</p>
+    <a href="{% url 'remove_from_cart' item.movie.id %}">Remove</a>
+{% endfor %}
