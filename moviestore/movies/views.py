@@ -39,7 +39,7 @@ def add_to_cart(request, movie_id):
         cart_item.quantity += 1  # ✅ Increase quantity if already in cart
         cart_item.save()
 
-    return redirect('cart')
+    return render(request, 'movies/cart.html', {'cart_items': cart_items})
 
 
 @login_required
@@ -51,7 +51,7 @@ def view_cart(request):
 def remove_from_cart(request, movie_id):
     cart_item = get_object_or_404(Cart, user=request.user, movie_id=movie_id)
     cart_item.delete()
-    return redirect('cart')
+    return render(request, 'movies/cart.html', {'cart_items': cart_items})
 
 @login_required
 def account_page(request):
