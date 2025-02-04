@@ -4,6 +4,24 @@
     <title>Movie List</title>
 </head>
 <body>
+    <nav>
+        <a href="{% url 'home' %}"> Home</a> |
+        <a href="{% url 'view_cart' %}"> Cart</a> |
+        {% if user.is_authenticated %}
+            <form action="{% url 'logout' %}" method="post" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" style="background: none; border: none; color: blue; cursor: pointer; text-decoration: underline;">
+                    Log out
+                </button>
+        </form>
+        
+        {% else %}
+            <a href="{% url 'login' %}"> Login</a>
+        {% endif %}
+    </nav>
+    
+    <hr>
+
     <h1>Available Movies</h1>
     {% for movie in movies %}
         <h2>{{ movie.title }}</h2>

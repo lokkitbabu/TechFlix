@@ -6,9 +6,14 @@
 <body>
     <h1>Welcome to GT Movies Store</h1>
     <p>Explore movies <a href="{% url 'index' %}">here</a>.</p>
-    <p>View your cart <a href="{% url 'cart' %}">here</a>.</p>
+    <p>View your cart <a href="{% url 'view_cart' %}">here</a>.</p>
     <p>Sign up for an account <a href="{% url 'signup' %}">here</a>.</p>
     <p>Log in to your account <a href="{% url 'login' %}">here</a>.</p>
-    <p>Log out of your account <a href="{% url 'logout' %}">here</a>.</p>
-</body>
+    <form action="{% url 'logout' %}" method="post" style="display: inline;">
+        {% csrf_token %}
+        <button type="submit" style="background: none; border: none; color: blue; cursor: pointer; text-decoration: underline;">
+            Log out here
+        </button>
+    </form>
+    </body>
 </html>
