@@ -33,13 +33,15 @@ def signup(request):
 @login_required
 def add_to_cart(request, movie_id):
     movie = get_object_or_404(Movie, id=movie_id)
-    cart_item, created = Cart.objects.get_or_create(user=request.user, movie=movie)
+    cart_items, created = Cart.objects.get_or_create(user=request.user, movie=movie)
     
     if not created:
-        cart_item.quantity += 1  
-        cart_item.save()
+        cart_items.quantity += 1  
+        cart_items.save()
 
-    return render(request, 'movies/cart.html', {'cart_items': cart_item})
+        cart_items = Cart.objects.filter(user=request.user)
+
+    return render(request, 'movies/cart.html', {'cart_items': cart_items})
 
 
 @login_required
@@ -49,9 +51,9 @@ def view_cart(request):
 
 @login_required
 def remove_from_cart(request, movie_id):
-    cart_item = get_object_or_404(Cart, user=request.user, movie_id=movie_id)
-    cart_item.delete()
-    return render(request, 'movies/cart.html', {'cart_items': cart_item})
+    cart_items = get_object_or_404(Cart, user=request.user, movie_id=movie_id)
+    cart_items.delete()
+    return render(request, 'movies/cart.html', {'cart_items': cart_items})
 
 @login_required
 def account_page(request):
