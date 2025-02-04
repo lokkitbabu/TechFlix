@@ -1,5 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login, authenticate
 from .models import Movie, Cart, Order
 
 def home(request):
@@ -12,6 +14,18 @@ def index(request):
 def movie_detail(request, movie_id):
     movie = get_object_or_404(Movie, id=movie_id)
     return render(request, 'movies/detail.html', {'movie': movie})
+
+def signup(request):
+    if request.method == "POST":
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('home')
+    else:
+        form = UserCreationForm()
+    return render(request, "movies/signup.html", {"form": form})
+
 
 @login_required
 def add_to_cart(request, movie_id):

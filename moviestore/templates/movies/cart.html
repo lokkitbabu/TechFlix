@@ -3,3 +3,4 @@
     <p>{{ item.movie.title }} - ${{ item.movie.price }}</p>
     <a href="{% url 'remove_from_cart' item.movie.id %}">Remove</a>
 {% endfor %}
+ 
