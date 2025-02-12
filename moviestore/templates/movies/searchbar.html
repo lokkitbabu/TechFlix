@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Find movies</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    input[type="text"] {
+      width: 300px;
+      padding: 8px;
+      font-size: 16px;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 10px;
+    }
+    li {
+      padding: 4px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Search Words</h1>
+  <!-- Search Bar -->
+  <input type="text" id="search" placeholder="Type to search..." onkeyup="searchWords()" />
+
+  <!-- Container for Search Results -->
+  <ul id="result"></ul>
+
+  <script>
+    // "Database" of words
+    const words = [
+      'apple', 'banana', 'orange', 'grape', 'pineapple',
+      'mango', 'strawberry', 'blueberry', 'watermelon', 'lemon',
+      'lime', 'kiwi', 'peach', 'pear', 'plum'
+    ];
+
+    // Function to filter and display words
+    function searchWords() {
+      const input = document.getElementById('search');
+      const filter = input.value.toLowerCase();
+      const resultList = document.getElementById('result');
+
+      // Clear previous results
+      resultList.innerHTML = '';
+
+      // Filter words based on input
+      const filteredWords = words.filter(word => word.toLowerCase().includes(filter));
+
+      // Display filtered words as list items
+      filteredWords.forEach(word => {
+        const li = document.createElement('li');
+        li.textContent = word;
+        resultList.appendChild(li);
+      });
+    }
+  </script>
+</body>
+</html>
