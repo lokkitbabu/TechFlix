@@ -18,7 +18,7 @@ def add_to_cart(request, movie_id):
         cart_item.quantity += 1
         cart_item.save()
 
-    return redirect("view_cart")
+    return redirect("index")
 
 @login_required
 def view_cart(request):
@@ -31,3 +31,8 @@ def remove_from_cart(request, movie_id):
     cart_item = get_object_or_404(Cart, movie_id=movie_id)
     cart_item.delete()
     return redirect('view_cart')
+
+def searchbar(request):
+    movies = Movie.objects.all()
+    return render(request, 'movies/searchbar.html', {'movies': movies})
+

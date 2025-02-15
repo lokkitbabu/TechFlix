@@ -1,9 +1,16 @@
+<a href="{% url 'searchbar' %}">|Search for movies|</a>
+
 <h2>Your Cart</h2>
+
 {% for item in cart_items %}
     <div>
         <p>{{ item.movie.title }} - ${{ item.movie.price }}</p>
-        <a href="{% url 'remove_from_cart' item.movie.id %}">|Remove|</a>
-        <a href="{% url 'movie_detail' movie.id %}">View Details|</a>
+        {% if item.movie.id %}
+            <a href="{% url 'remove_from_cart' item.movie.id %}">|Remove|</a>
+            <a href="{% url 'movie_detail' item.movie.id %}">View Details|</a>
+        {% else %}
+            <p>Error: Movie ID missing</p>
+        {% endif %}
     </div>
 {% empty %}
     <p>Your cart is empty.</p>
