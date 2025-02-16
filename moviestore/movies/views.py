@@ -1,6 +1,11 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login, authenticate
 from .models import Movie, Cart, Order
+
+def home(request):
+    return render(request, "movies/home.html")
 
 def index(request):
     movies = Movie.objects.all()
@@ -12,6 +17,21 @@ def movie_detail(request, movie_id):
     movies = Movie.objects.all()
     in_cart = Cart.objects.filter(user=request.user, movie=movie).exists()
     return render(request, 'movies/detail.html', {'movie': movie,'in_cart': in_cart, 'movies': movies})
+
+def signup(request):
+    if request.method == "POST":
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            user.email = request.POST.get("email")
+            user.save()
+            login(request, user)
+            return redirect('account') 
+    else:
+        form = UserCreationForm()
+
+    return render(request, "movies/signup.html", {"form": form})
+
 
 @login_required
 def add_to_cart(request, movie_id):
@@ -41,3 +61,13 @@ def searchbar(request):
     movies = Movie.objects.all()
     return render(request, 'movies/searchbar.html', {'movies': movies})
 
+@login_required
+def account_page(request):
+    user_orders = Order.objects.filter(user=request.user)
+    return render(request, "movies/account.html", {
+        "user": request.user,
+        "orders": user_orders
+    })
+
+def login_redirect(request):
+    return redirect('account')
