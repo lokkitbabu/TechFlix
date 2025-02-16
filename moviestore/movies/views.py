@@ -4,27 +4,32 @@ from .models import Movie, Cart, Order
 
 def index(request):
     movies = Movie.objects.all()
-    return render(request, 'movies/index.html', {'movies': movies})
+    cart_items = Cart.objects.filter(user=request.user).values_list('movie_id', flat=True)
+    return render(request, 'movies/index.html', {'movies': movies, 'cart_items': cart_items})
 
 def movie_detail(request, movie_id):
     movie = get_object_or_404(Movie, id=movie_id)
-    return render(request, 'movies/detail.html', {'movie': movie})
+    movies = Movie.objects.all()
+    in_cart = Cart.objects.filter(user=request.user, movie=movie).exists()
+    return render(request, 'movies/detail.html', {'movie': movie,'in_cart': in_cart, 'movies': movies})
 
 @login_required
 def add_to_cart(request, movie_id):
     movie = get_object_or_404(Movie, id=movie_id)
     cart_item, created = Cart.objects.get_or_create(user=request.user, movie=movie)
+    in_cart = Cart.objects.filter(user=request.user, movie=movie).exists()
     if not created:
         cart_item.quantity += 1
         cart_item.save()
 
-    return redirect("index")
+    return render(request, 'movies/detail.html', {'movie': movie,'in_cart': in_cart})
 
 @login_required
 def view_cart(request):
     cart_items = Cart.objects.filter(user=request.user)
+    movies = Movie.objects.all()
     total_price = sum(item.total_price() for item in cart_items)
-    return render(request, 'movies/cart.html', {'cart_items': cart_items, "total_price": total_price})
+    return render(request, 'movies/cart.html', {'cart_items': cart_items, "total_price": total_price, 'movies': movies})
 
 @login_required
 def remove_from_cart(request, movie_id):

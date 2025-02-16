@@ -9,12 +9,10 @@
 
   <!-- Container for Search Results -->
   <div id="result">
-    <!-- When nothing is typed, you can either show all movies or nothing -->
     {% for movie in movies %}
       <div class="movie">
         <h2>{{ movie.title }}</h2>
         <p>{{ movie.description }}</p>
-        <p>Price: ${{ movie.price }}</p>
         <img src="{{ movie.image.url }}" alt="{{ movie.title }}">
       </div>
     {% endfor %}
@@ -34,34 +32,37 @@
     {% endfor %}
   ];
 
-  function searchMovies() {
+function searchMovies() {
     const input = document.getElementById('search');
-    const filter = input.value.toLowerCase();
+    const filter = input.value.toLowerCase().trim();
     const resultContainer = document.getElementById('result');
 
-    // Clear the results container
+    // Clear previous results
     resultContainer.innerHTML = '';
 
-    // Filter movies based on the title (you can also search in description if desired)
+    // If the search bar is empty, do NOT display any movies
+    if (filter === '') {
+        return;
+    }
+
+    // Filter movies based on the title
     const filteredMovies = movies.filter(movie => movie.title.toLowerCase().includes(filter));
 
-    // If nothing is typed, you can show a message or all movies
-    if (input.value.trim() === '') {
-      // Option 1: Show all movies when the search field is empty.
-      movies.forEach(displayMovie);
-      return;
-    }
-
-    // If there are matching movies, display them
-    if (filteredMovies.length) {
-      filteredMovies.forEach(displayMovie);
+    // Display filtered movies or "No movies found" message
+    if (filteredMovies.length > 0) {
+        filteredMovies.forEach(displayMovie);
     } else {
-      // Optionally, display a "No results found" message
-      const message = document.createElement('p');
-      message.textContent = 'No movies found.';
-      resultContainer.appendChild(message);
+        const message = document.createElement('p');
+        message.textContent = 'No movies found.';
+        resultContainer.appendChild(message);
     }
-  }
+}
+
+// Clear the results initially (when the page loads)
+document.addEventListener("DOMContentLoaded", function() {
+    document.getElementById('result').innerHTML = '';
+});
+
 
   // Helper function to create and display a movie element
   function displayMovie(movie) {
@@ -77,10 +78,6 @@
     const description = document.createElement('p');
     description.textContent = movie.description;
     movieDiv.appendChild(description);
-
-    const price = document.createElement('p');
-    price.textContent = 'Price: $' + movie.price;
-    movieDiv.appendChild(price);
 
     if (movie.image) {
       const img = document.createElement('img');
