@@ -1,11 +1,12 @@
 import os
 import django
+import random
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'moviestore.settings')
 django.setup()
 
 from django.contrib.auth.models import User
-from movies.models import Movie, Cart, Order, OrderItem
+from movies.models import Movie, Cart, Order, OrderItem, Review
 
 # Setup Django environment
 
@@ -101,6 +102,36 @@ def create_orders():
             cart_items.delete()  # Clear the cart after order creation
             print(f"📦 Created order {order.id} for {user.username} - Total: ${order.total_price:.2f}")
 
+def create_reviews():
+    """Create sample reviews for movies"""
+    users = User.objects.all()
+    movies = Movie.objects.all()
+
+    reviews_data = [
+        "Amazing movie! Must watch.",
+        "Really enjoyed it, great acting.",
+        "The visuals were stunning!",
+        "Good, but could have been better.",
+        "Not my cup of tea.",
+        "Fantastic story and characters!",
+        "I would watch this again!",
+        "Overrated, in my opinion.",
+        "An instant classic!",
+        "Pretty good, but too long.",
+    ]
+
+    for user in users:
+        for movie in movies:
+            if not Review.objects.filter(user=user, movie=movie).exists():
+                review = Review.objects.create(
+                    user=user,
+                    movie=movie,
+                    rating=random.randint(1, 5),
+                    comment=random.choice(reviews_data),
+                )
+                print(f"📝 Added review for {movie.title} by {user.username}")
+
+
 if __name__ == "__main__":
     print(" Populating database...\n")
     
@@ -108,5 +139,7 @@ if __name__ == "__main__":
     create_movies()
     add_movies_to_cart()
     create_orders()
+    create_reviews()  # ✅ Add this function call
+
 
     print("\n Database populated successfully!")

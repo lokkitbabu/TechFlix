@@ -11,26 +11,41 @@
 </head>
 
 <body class="text-white bg-gray-900">
-    <header class="p-5 flex justify-between items-center bg-gray-800">
-        <img src="{% static 'movies/images/Techflix_logo.png' %}" height="100" alt="Techflix Logo" width="300">
-        <nav class="flex space-x-5">
-            <span><a href="{% url 'index' %}" class="hover:text-red-400">Home</a></span>
-            <span><a href="{% url 'view_cart' %}" class="hover:text-red-400">View Cart</a></span>
-            <span><a href="/my-list">My List</a></span>
-        </nav>
-        <div class="flex flex-wrap space-x-3 items-center">
-            <form action="{% url 'searchbar' %}" method="POST">
+    <header class="bg-gray-800 p-5 flex justify-between items-center shadow-md">
+        <!-- Logo -->
+        <a href="{% url 'index' %}">
+            <img src="{% static 'movies/images/Techflix_logo.png' %}" alt="TechFlix Logo" class="h-12">
+        </a>
+    
+        <!-- Search Bar -->
+        <form action="{% url 'searchbar' %}" method="POST" class="relative flex items-center">
+            {% csrf_token %}
+            <input type="text" name="search_term" value="{{ search_term|default_if_none:'' }}" 
+                placeholder="Search movies..."
+                class="bg-gray-700 text-white placeholder-gray-400 px-4 py-2 rounded-l-full w-64 focus:outline-none focus:ring-2 focus:ring-red-500">
+            <button type="submit" 
+                class="bg-red-600 text-white px-5 py-2 rounded-r-full hover:bg-red-500 transition">
+                Search
+            </button>
+        </form>
+    
+        <!-- Navigation & User Info -->
+        <div class="flex items-center space-x-6">
+            <a href="{% url 'index' %}" class="hover:text-red-400">Home</a>
+            <a href="{% url 'view_cart' %}" class="hover:text-red-400">View Cart</a>
+            <a href="{% url 'about' %}" class="hover:text-red-400">About</a>
+            <a href="{% url 'account' %}" class="hover:text-red-400">Welcome, {{ user.username }}</a>
+    
+            <!-- Logout Button -->
+            <form action="{% url 'logout' %}" method="POST">
                 {% csrf_token %}
-                <input type="text" name="search_term" value="{{ search_term|default_if_none:'' }}" placeholder="Search" class="bg-gray-700 p-2 rounded">
-                <button class="bg-red-600 text-white p-2 rounded hover:bg-red-500">Search</button>
+                <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-500">
+                    Logout
+                </button>
             </form>
-                <a href="{% url 'account' %}" class="block p-2">Welcome, {{ user.username }}</a>
-                <form action="{% url 'logout' %}" method="POST" style="display: inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="block p-2 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-500">Logout</button>
-                </form>
         </div>
     </header>
+    
 
     <!-- ✅ Toast Notification -->
     {% if messages %}

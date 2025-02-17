@@ -241,3 +241,6 @@ def movie_detail(request, movie_id):
         "user_review": user_review,
     }
     return render(request, "movies/detail.html", context)
+
+def about(request):
+    return render(request, 'movies/about.html')
