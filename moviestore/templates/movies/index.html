@@ -18,7 +18,7 @@
             <span><a href="{% url 'view_cart' %}" class="hover:text-red-400">View Cart</a></span>
             <span><a href="/my-list">My List</a></span>
         </nav>
-        <div class="flex space-x-5 items-center">
+        <div class="flex flex-wrap space-x-3 items-center">
             <form action="{% url 'searchbar' %}" method="POST">
                 {% csrf_token %}
                 <input type="text" name="search_term" value="{{ search_term|default_if_none:'' }}" placeholder="Search" class="bg-gray-700 p-2 rounded">
@@ -53,13 +53,16 @@
             <h2 class="text-xl mb-5">All Movies</h2>
         {% endif %}
         
-        <div class="grid grid-cols-5 gap-5">
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5">
             {% for movie in movies %}
             <div class="bg-gray-800 p-4 rounded shadow">
-                <img src="{{ movie.image.url }}" alt="{{ movie.title }}" class="mb-2 rounded">
+                <img src="{{ movie.image.url }}" alt="{{ movie.title }}" class="w-full h-60 object-cover rounded">
                 <h3 class="text-lg font-bold">{{ movie.title }}</h3>
                 <p class="text-sm">{{ movie.description|truncatewords:15 }}</p>
                 <p class="text-sm">Price: ${{ movie.price }}</p>
+                <a href="{% url 'movie_detail' movie.id %}" class="text-blue-400 hover:text-blue-500 block mt-2">
+                    View Details
+                </a>    
                 <form action="{% url 'add_to_cart' movie.id %}" method="POST" class="mt-2">
                     {% csrf_token %}
                     <button class="bg-red-600 text-white p-2 rounded hover:bg-red-500">Add to Cart</button>

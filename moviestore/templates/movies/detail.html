@@ -1,141 +1,219 @@
-{% block title %}TechFlix{% endblock %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    {% load static %}
-    <title>Search</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ movie.title }} - TechFlix</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-        #header {
-            padding: 10px;
-            background-color: #f8f8f8;
-            text-align: center;
-        }
-        #search {
-            padding: 5px;
-            width: 200px;
-        }
-        #result {
+        /* Modal Styling */
+        #reviewModal {
             display: none;
-            position: absolute;
-            background-color: white;
+            position: fixed;
+            z-index: 10;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        #reviewModal .modal-content {
+            background: white;
+            padding: 20px;
+            width: 50%;
+            max-width: 600px;
+            margin: 10% auto;
+            border-radius: 10px;
+            text-align: center;
+            color: black;
+        }
+        #reviewModal .modal-content input, textarea {
+            width: 100%;
+            margin-top: 10px;
+            padding: 8px;
             border: 1px solid #ccc;
-            width: 220px;
-            max-height: 200px;
-            overflow-y: auto;
+            border-radius: 5px;
         }
-        .dropdown-item {
-            padding: 10px;
-            border-bottom: 1px solid #eee;
+
+        /* Star Rating System */
+        .star-rating {
+            display: flex;
+            justify-content: center;
+            font-size: 30px;
+            cursor: pointer;
         }
-        .movie-thumbnail {
-            width: 50px;
-            height: 50px;
-            margin-right: 10px;
+        
+        .star {
+            color: gray;
+            transition: color 0.2s ease-in-out;
         }
-        .movie-title {
-            font-weight: bold;
+        
+        /* Hover Effect */
+        .star.hovered {
+            color: gold;
         }
-        .details-btn {
-            display: block;
-            text-decoration: none;
-            color: blue;
-            margin-top: 5px;
+        
+        /* Clicked Selection */
+        .star.selected {
+            color: gold;
         }
-        .movie {
-            border: 1px solid #ccc;
-            padding: 10px;
-            margin: 10px;
-        }
+        
     </style>
 </head>
-{% block content %}
-  <div id="header">
-    <a href="{% url 'index' %}">|Home|</a>
-    <input type="text" id="search" placeholder="Search movies..." onkeyup="searchMovies()" />
-  </div>
-  <div id="result"></div>
-{% endblock %}
+<body class="text-white bg-gray-900">
 
-{% block extra_js %}
-<script>
-  const movies = [
-    {% for movie in movies %}
-      {
-        id: "{{ movie.id }}",
-        title: "{{ movie.title }}",
-        description: "{{ movie.description }}",
-        image: "{% if movie.image %}{{ movie.image.url }}{% endif %}"
-      }{% if not forloop.last %},{% endif %}
-    {% endfor %}
-  ];
+    <!-- Navbar -->
+    <header class="p-5 flex justify-between items-center bg-gray-800">
+        <img src="{% static 'movies/images/Techflix_logo.png' %}" height="100" alt="Techflix Logo" width="300">
+        <nav class="flex space-x-5">
+            <a href="{% url 'index' %}" class="hover:text-red-400">Home</a>
+            <a href="{% url 'view_cart' %}" class="hover:text-red-400">View Cart</a>
+            <a href="{% url 'account' %}" class="hover:text-red-400">Account</a>
+        </nav>
+        <form action="{% url 'logout' %}" method="POST">
+            {% csrf_token %}
+            <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-500">Logout</button>
+        </form>
+    </header>
 
-  function searchMovies() {
-    const input = document.getElementById('search').value.toLowerCase().trim();
-    const resultContainer = document.getElementById('result');
-    resultContainer.innerHTML = '';
-    if (input === '') {
-        resultContainer.style.display = 'none';
-        return;
-    }
-    const filteredMovies = movies.filter(movie => movie.title.toLowerCase().includes(input));
-    if (filteredMovies.length > 0) {
-        resultContainer.style.display = 'block';
-        filteredMovies.forEach(movie => {
-            const movieItem = document.createElement('div');
-            movieItem.classList.add('dropdown-item');
+    <!-- Movie Details Layout -->
+    <section class="container mx-auto py-10 px-5 flex gap-10">
+        <!-- Left Column (Movie Poster & Info) -->
+        <div class="w-1/4">
+            <img src="{{ movie.image.url }}" alt="{{ movie.title }}" class="w-full h-auto rounded-lg shadow-lg mb-5">
+            <h2 class="text-3xl font-bold mb-3">{{ movie.title }}</h2>
+            <p class="text-xl font-semibold text-yellow-400 mb-3">Price: ${{ movie.price }}</p>
 
-            const movieImg = document.createElement('img');
-            movieImg.src = movie.image;
-            movieImg.alt = movie.title;
-            movieImg.classList.add('movie-thumbnail');
-
-            const movieTitle = document.createElement('span');
-            movieTitle.textContent = movie.title;
-            movieTitle.classList.add('movie-title');
-
-            const detailsButton = document.createElement('a');
-            detailsButton.href = `/movies/${movie.id}/`;
-            detailsButton.textContent = 'Details';
-            detailsButton.classList.add('details-btn');
-
-            movieItem.appendChild(movieImg);
-            movieItem.appendChild(movieTitle);
-            movieItem.appendChild(detailsButton);
-            resultContainer.appendChild(movieItem);
-        });
-    } else {
-        const message = document.createElement('p');
-        message.textContent = 'No movies found.';
-        message.classList.add('dropdown-item');
-        resultContainer.appendChild(message);
-        resultContainer.style.display = 'block';
-    }
-  }
-
-  document.addEventListener("click", function(event) {
-    const resultContainer = document.getElementById('result');
-    if (!event.target.closest('#search') && !event.target.closest('#result')) {
-        resultContainer.style.display = 'none';
-    }
-  });
-
-  document.addEventListener("DOMContentLoaded", function() {
-    document.getElementById('result').style.display = 'none';
-  });
-</script>
-{% endblock %}
-
-<h2>{{ movie.title }}</h2>
-<p>{{ movie.description }}</p>
-<p>Price: ${{ movie.price }}</p>
-<img src="{{ movie.image.url }}" alt="{{ movie.title }}">
- {% if in_cart%}
-            <button disabled>Added to Cart</button>
-        {% else %}
             <form method="POST" action="{% url 'add_to_cart' movie.id %}">
                 {% csrf_token %}
-                <button type="submit">Add to Cart</button>
+                <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-500">Add to Cart</button>
             </form>
-        {% endif %}
-<a href="{% url 'index' %}">Back|</a>
+
+            <a href="{% url 'index' %}" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-500 mt-2 inline-block">Back</a>
+        </div>
+
+        <!-- Right Column (Movie Description & Reviews) -->
+        <div class="w-3/4">
+            <!-- Movie Description -->
+            <div class="bg-gray-700 p-4 rounded-lg mb-6">
+                <h3 class="text-2xl font-bold mb-2">Movie Description</h3>
+                <p class="text-gray-300">{{ movie.description }}</p>
+            </div>
+
+            <!-- Reviews Section -->
+            <div class="bg-gray-800 p-6 rounded-lg shadow-lg relative">
+                <h3 class="text-2xl font-bold mb-4">Reviews</h3>
+
+                <!-- Add/Edit Review Button -->
+                <button id="reviewButton" onclick="toggleReviewModal()"
+                    class="absolute top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-full hover:bg-green-400">
+                    <i id="reviewIcon" class="fas {% if user_review %}fa-pencil-alt{% else %}fa-plus{% endif %}"></i>
+                </button>
+
+                <!-- Scrollable Reviews -->
+                <div class="max-h-80 overflow-y-auto">
+                    {% for review in reviews %}
+                    <div class="border-b border-gray-600 py-3 flex justify-between items-center">
+                        <div>
+                            <p class="text-lg font-bold">{{ review.user.username }}</p>
+                            <p class="text-yellow-400">
+                                {% for _ in "★★★★★"|slice:review.rating %}
+                                    ⭐
+                                {% endfor %}
+                            </p>
+                            <p class="text-gray-300">{{ review.comment }}</p>
+                        </div>
+                    
+                        <!-- Show Delete Button Only for Review Owner -->
+                        {% if review.user == request.user %}
+                        <form method="POST" action="{% url 'delete_review' review.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="text-red-500 hover:text-red-700">
+                                <i class="fas fa-trash text-xl"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                        
+                    </div>
+                    
+                    {% empty %}
+                        <p class="text-gray-400">No reviews yet. Be the first to review!</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Review Modal -->
+    <div id="reviewModal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold">Rate & Review</h2>
+
+            <!-- Interactive Star Rating -->
+            <div class="star-rating" id="starRating">
+                <span class="star" data-value="1">★</span>
+                <span class="star" data-value="2">★</span>
+                <span class="star" data-value="3">★</span>
+                <span class="star" data-value="4">★</span>
+                <span class="star" data-value="5">★</span>
+            </div>
+
+            <form method="POST" action="{% url 'add_review' movie.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="rating" id="rating" value="0">
+                <textarea name="comment" placeholder="Write your review..." rows="4" required></textarea>
+                <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400 mt-2">Submit</button>
+                <button type="button" onclick="toggleReviewModal()" class="bg-gray-500 text-black px-4 py-2 rounded hover:bg-gray-400 mt-2">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const stars = document.querySelectorAll(".star");
+                const ratingInput = document.getElementById("rating");
+        
+                stars.forEach((star) => {
+                    star.addEventListener("click", function () {
+                        const selectedRating = this.dataset.value;
+                        ratingInput.value = selectedRating;
+        
+                        stars.forEach((s) => {
+                            s.classList.remove("selected");
+                            if (s.dataset.value <= selectedRating) {
+                                s.classList.add("selected");
+                            }
+                        });
+                    });
+        
+                    star.addEventListener("mouseover", function () {
+                        const hoverRating = this.dataset.value;
+        
+                        stars.forEach((s) => {
+                            s.classList.remove("hovered");
+                            if (s.dataset.value <= hoverRating) {
+                                s.classList.add("hovered");
+                            }
+                        });
+                    });
+        
+                    star.addEventListener("mouseleave", function () {
+                        stars.forEach((s) => {
+                            s.classList.remove("hovered");
+                        });
+                    });
+                });
+            });
+        
+            function toggleReviewModal() {
+                const modal = document.getElementById("reviewModal");
+                modal.style.display = modal.style.display === "none" ? "block" : "none";
+            }        
+        
+    </script>
+
+</body>
+</html>

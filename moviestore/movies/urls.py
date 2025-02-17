@@ -19,5 +19,26 @@ urlpatterns = [
     path('account/', account_page, name='account'),
     path('<int:movie_id>/add_review/', add_review, name='add_review'),
     path('cart/place-order/', place_order, name='place_order'),
+    path('password_reset/', auth_views.PasswordResetView.as_view(
+        template_name="movies/password_reset_form.html",
+        success_url='/password_reset_done/'
+    ), name='password_reset'),
+    
+    path('password_reset_done/', auth_views.PasswordResetDoneView.as_view(
+        template_name="movies/password_reset_done.html"
+    ), name='password_reset_done'),
+    
+    path('password_reset_confirm/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(
+        template_name="movies/password_reset_confirm.html",
+        success_url='/password_reset_complete/'
+    ), name='password_reset_confirm'),
+    
+    path('password_reset_complete/', auth_views.PasswordResetCompleteView.as_view(
+        template_name="movies/password_reset_complete.html"
+    ), name='password_reset_complete'),
+    
+    path('review/<int:review_id>/delete/', delete_review, name='delete_review'),
+    path('movies/<int:movie_id>/', movie_detail, name='movie_detail'),
+    path('/delete_review/<int:review_id>/', delete_review, name='delete_review'),
 
 ]

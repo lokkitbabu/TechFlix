@@ -52,11 +52,9 @@ class OrderItem(models.Model):
 class Review(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
-    rating = models.PositiveIntegerField()
+    rating = models.IntegerField(default=1)  # ✅ Ensures it never stores NULL
     comment = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
     class Meta:
         unique_together = ('user', 'movie')  # Ensure one review per user per movie
 

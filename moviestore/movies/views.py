@@ -7,6 +7,11 @@ from django.contrib import messages
 from django.db.models import Q
 from .models import Movie, Cart, Order, Review, OrderItem
 from django.http import HttpResponseRedirect
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+from django.template.loader import render_to_string
+from django.utils.encoding import force_bytes
+
 
 
 def home(request):
@@ -20,9 +25,21 @@ def index(request):
 @login_required
 def movie_detail(request, movie_id):
     movie = get_object_or_404(Movie, id=movie_id)
-    movies = Movie.objects.all()
-    in_cart = Cart.objects.filter(user=request.user, movie=movie).exists()
-    return render(request, 'movies/detail.html', {'movie': movie,'in_cart': in_cart, 'movies': movies})
+    
+    # Fetch all reviews related to the movie
+    reviews = Review.objects.filter(movie=movie).select_related('user')
+
+    # Check if the logged-in user has already reviewed the movie
+    user_review = None
+    if request.user.is_authenticated:
+        user_review = reviews.filter(user=request.user).first()
+
+    return render(request, 'movies/detail.html', {
+        'movie': movie,
+        'reviews': reviews,  # Pass all reviews
+        'user_review': user_review,  # Pass user's review (if exists)
+        'in_cart': request.user.is_authenticated and movie.cart_set.filter(user=request.user).exists()
+    })
 
 def signup(request):
     if request.method == "POST":
@@ -121,22 +138,39 @@ def add_review(request, movie_id):
         rating = request.POST.get('rating')
         comment = request.POST.get('comment')
 
-        if not 1 <= int(rating) <= 5:
-            messages.error(request, "Rating must be between 1 and 5.")
+        # Ensure rating is provided
+        if rating is None or rating.strip() == "":
+            messages.error(request, "You must provide a rating between 1 and 5.")
             return redirect('movie_detail', movie_id=movie.id)
 
-        review, created = Review.objects.get_or_create(user=request.user, movie=movie)
-        review.rating = rating
-        review.comment = comment
-        review.save()
+        # Convert rating safely to an integer
+        try:
+            rating = int(rating)
+            if not 1 <= rating <= 5:
+                raise ValueError
+        except ValueError:
+            messages.error(request, "Rating must be a number between 1 and 5.")
+            return redirect('movie_detail', movie_id=movie.id)
 
-        if created:
-            messages.success(request, "Review added successfully.")
-        else:
+        # Get or create the review with default values
+        review, created = Review.objects.get_or_create(
+            user=request.user, movie=movie,
+            defaults={'rating': rating, 'comment': comment}  # ✅ Set defaults for new reviews
+        )
+
+        # If review exists, update it
+        if not created:
+            review.rating = rating
+            review.comment = comment
+            review.save()
             messages.success(request, "Review updated successfully.")
+        else:
+            messages.success(request, "Review added successfully.")
 
         return redirect('movie_detail', movie_id=movie.id)
     
+    return redirect('index')  # Redirect if accessed via GET
+
 @login_required
 def place_order(request):
     cart_items = Cart.objects.filter(user=request.user)
@@ -165,3 +199,45 @@ def place_order(request):
     
     messages.success(request, f"Your order #{order.id} has been placed successfully.")
     return render(request, 'movies/cart.html', {'refresh': True})
+
+def password_reset_view(request):
+    if request.method == "POST":
+        username = request.POST.get("username")
+        user = User.objects.filter(username=username).first()
+
+        if user:
+            # Generate a password reset link manually
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+            reset_url = f"/movies/password_reset_confirm/{uid}/{token}/"
+
+            messages.success(request, f"Use this link to reset your password: {reset_url}")
+            return redirect('password_reset_done')
+        else:
+            messages.error(request, "Username not found.")
+
+    return render(request, "movies/password_reset_form.html")
+
+
+@login_required
+def delete_review(request, review_id):
+    review = get_object_or_404(Review, id=review_id, user=request.user)
+    
+    if request.method == "POST":
+        review.delete()
+        messages.success(request, "Your review has been deleted.")
+    
+    return redirect('movie_detail', movie_id=review.movie.id)
+
+@login_required
+def movie_detail(request, movie_id):
+    movie = get_object_or_404(Movie, id=movie_id)
+    reviews = Review.objects.filter(movie=movie)
+    user_review = reviews.filter(user=request.user).first()  # Get current user's review if it exists
+
+    context = {
+        "movie": movie,
+        "reviews": reviews,
+        "user_review": user_review,
+    }
+    return render(request, "movies/detail.html", context)
