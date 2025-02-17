@@ -1,189 +1,74 @@
-<<<<<<< HEAD
-{% block title %}TechFlix{% endblock %}
-<head>
-    {% load static %}
-    <title>Search</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-        #header {
-            padding: 10px;
-            background-color: #f8f8f8;
-            text-align: center;
-        }
-        #search {
-            padding: 5px;
-            width: 200px;
-        }
-        #result {
-            display: none;
-            position: absolute;
-            background-color: white;
-            border: 1px solid #ccc;
-            width: 220px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        .dropdown-item {
-            padding: 10px;
-            border-bottom: 1px solid #eee;
-        }
-        .movie-thumbnail {
-            width: 50px;
-            height: 50px;
-            margin-right: 10px;
-        }
-        .movie-title {
-            font-weight: bold;
-        }
-        .details-btn {
-            display: block;
-            text-decoration: none;
-            color: blue;
-            margin-top: 5px;
-        }
-        .movie {
-            border: 1px solid #ccc;
-            padding: 10px;
-            margin: 10px;
-        }
-    </style>
-</head>
-{% block content %}
-  <div id="header">
-    <a href="{% url 'index' %}">|Home|</a>
-    <input type="text" id="search" placeholder="Search movies..." onkeyup="searchMovies()" />
-    <form method="POST" action="{% url 'view_cart' %}">
-        {% csrf_token %}
-        <button type="submit">View Cart</button>
-    </form>
-  </div>
-  <div id="result"></div>
-{% endblock %}
+{% load static %}
 
-{% block extra_js %}
-<script>
-  const movies = [
-    {% for movie in movies %}
-      {
-        id: "{{ movie.id }}",
-        title: "{{ movie.title }}",
-        description: "{{ movie.description }}",
-        image: "{% if movie.image %}{{ movie.image.url }}{% endif %}"
-      }{% if not forloop.last %},{% endif %}
-    {% endfor %}
-  ];
-
-  function searchMovies() {
-    const input = document.getElementById('search').value.toLowerCase().trim();
-    const resultContainer = document.getElementById('result');
-    resultContainer.innerHTML = '';
-    if (input === '') {
-        resultContainer.style.display = 'none';
-        return;
-    }
-    const filteredMovies = movies.filter(movie => movie.title.toLowerCase().includes(input));
-    if (filteredMovies.length > 0) {
-        resultContainer.style.display = 'block';
-        filteredMovies.forEach(movie => {
-            const movieItem = document.createElement('div');
-            movieItem.classList.add('dropdown-item');
-            
-            const movieImg = document.createElement('img');
-            movieImg.src = movie.image;
-            movieImg.alt = movie.title;
-            movieImg.classList.add('movie-thumbnail');
-            
-            const movieTitle = document.createElement('span');
-            movieTitle.textContent = movie.title;
-            movieTitle.classList.add('movie-title');
-            
-            const detailsButton = document.createElement('a');
-            detailsButton.href = `/movies/${movie.id}/`;
-            detailsButton.textContent = 'Details';
-            detailsButton.classList.add('details-btn');
-            
-            movieItem.appendChild(movieImg);
-            movieItem.appendChild(movieTitle);
-            movieItem.appendChild(detailsButton);
-            resultContainer.appendChild(movieItem);
-        });
-    } else {
-        const message = document.createElement('p');
-        message.textContent = 'No movies found.';
-        message.classList.add('dropdown-item');
-        resultContainer.appendChild(message);
-        resultContainer.style.display = 'block';
-    }
-  }
-
-  document.addEventListener("click", function(event) {
-    const resultContainer = document.getElementById('result');
-    if (!event.target.closest('#search') && !event.target.closest('#result')) {
-        resultContainer.style.display = 'none';
-    }
-  });
-
-  document.addEventListener("DOMContentLoaded", function() {
-    document.getElementById('result').style.display = 'none';
-  });
-</script>
-{% endblock %}
-
-{% for movie in movies %}
-    <div class="movie">
-        <h2>{{ movie.title }}</h2>
-        <p>{{ movie.description }}</p>
-        <p>Price: ${{ movie.price }}</p>
-        <img src="{{ movie.image.url }}" alt="{{ movie.title }}" style="width: 100px; height: 100px;">
-        <form method="POST" action="{% url 'movie_detail' movie.id %}">
-            {% csrf_token %}
-            <button type="submit">Details</button>
-        </form>
-        {% if movie.id in cart_items %}
-            <button disabled>Added to Cart</button>
-        {% else %}
-            <form method="POST" action="{% url 'add_to_cart' movie.id %}">
-                {% csrf_token %}
-                <button type="submit">Add to Cart</button>
-            </form>
-        {% endif %}
-    </div>
-{% endfor %}
-=======
 <!DOCTYPE html>
-<html>
-<head>
-    <title>Movie List</title>
-</head>
-<body>
-    <nav>
-        <a href="{% url 'home' %}"> Home</a> |
-        <a href="{% url 'view_cart' %}"> Cart</a> |
-        {% if user.is_authenticated %}
-            <form action="{% url 'logout' %}" method="post" style="display: inline;">
-                {% csrf_token %}
-                <button type="submit" style="background: none; border: none; color: blue; cursor: pointer; text-decoration: underline;">
-                    Log out
-                </button>
-        </form>
-        
-        {% else %}
-            <a href="{% url 'login' %}"> Login</a>
-        {% endif %}
-    </nav>
-    
-    <hr>
+<html lang="en">
 
-    <h1>Available Movies</h1>
-    {% for movie in movies %}
-        <h2>{{ movie.title }}</h2>
-        <p>{{ movie.description }}</p>
-        <p>Price: ${{ movie.price }}</p>
-        <img src="{{ movie.image.url }}" alt="{{ movie.title }}" width="200">
-        <a href="{% url 'add_to_cart' movie.id %}">Add to Cart</a>
-    {% endfor %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Techflix</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body class="text-white bg-gray-900">
+    <header class="p-5 flex justify-between items-center bg-gray-800">
+        <img src="{% static 'movies/images/Techflix_logo.png' %}" height="100" alt="Techflix Logo" width="300">
+        <nav class="flex space-x-5">
+            <span><a href="{% url 'index' %}" class="hover:text-red-400">Home</a></span>
+            <span><a href="{% url 'view_cart' %}" class="hover:text-red-400">View Cart</a></span>
+            <span><a href="/my-list">My List</a></span>
+        </nav>
+        <div class="flex space-x-5 items-center">
+            <form action="{% url 'searchbar' %}" method="POST">
+                {% csrf_token %}
+                <input type="text" name="search_term" value="{{ search_term|default_if_none:'' }}" placeholder="Search" class="bg-gray-700 p-2 rounded">
+                <button class="bg-red-600 text-white p-2 rounded hover:bg-red-500">Search</button>
+            </form>
+                <a href="{% url 'account' %}" class="block p-2">Welcome, {{ user.username }}</a>
+                <form action="{% url 'logout' %}" method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="block p-2 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-500">Logout</button>
+                </form>
+        </div>
+    </header>
+
+    <!-- ✅ Toast Notification -->
+    {% if messages %}
+        <div id="toast" class="fixed top-5 right-5 bg-green-600 text-white px-5 py-3 rounded shadow-lg transition-opacity opacity-100">
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+        </div>
+        <script>
+            setTimeout(function() {
+                document.getElementById("toast").style.opacity = "0";
+            }, 3000);
+        </script>
+    {% endif %}
+
+    <section class="py-10 px-5">
+        {% if search_term %}
+            <h2 class="text-xl mb-5">Search Results for "{{ search_term }}"</h2>
+        {% else %}
+            <h2 class="text-xl mb-5">All Movies</h2>
+        {% endif %}
+        
+        <div class="grid grid-cols-5 gap-5">
+            {% for movie in movies %}
+            <div class="bg-gray-800 p-4 rounded shadow">
+                <img src="{{ movie.image.url }}" alt="{{ movie.title }}" class="mb-2 rounded">
+                <h3 class="text-lg font-bold">{{ movie.title }}</h3>
+                <p class="text-sm">{{ movie.description|truncatewords:15 }}</p>
+                <p class="text-sm">Price: ${{ movie.price }}</p>
+                <form action="{% url 'add_to_cart' movie.id %}" method="POST" class="mt-2">
+                    {% csrf_token %}
+                    <button class="bg-red-600 text-white p-2 rounded hover:bg-red-500">Add to Cart</button>
+                </form>
+            </div>
+            {% empty %}
+            <p>No movies match your search.</p>
+            {% endfor %}
+        </div>
+    </section>
 </body>
 </html>
->>>>>>> lnarayanan7

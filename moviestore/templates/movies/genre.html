@@ -51,6 +51,18 @@
             </div>
         </div>
     </header>
+    {% if messages %}
+        <div id="toast" class="fixed top-5 right-5 bg-green-600 text-white px-5 py-3 rounded shadow-lg transition-opacity opacity-100">
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+        </div>
+        <script>
+            setTimeout(function() {
+                document.getElementById("toast").style.opacity = "0";
+            }, 3000);
+        </script>
+    {% endif %}
     
     <hr>
 

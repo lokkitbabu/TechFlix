@@ -1,180 +1,97 @@
-<<<<<<< HEAD
-{% block title %}TechFlix{% endblock %}
-<head>
-    {% load static %}
-    <title>Search</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-        #header {
-            padding: 10px;
-            background-color: #f8f8f8;
-            text-align: center;
-        }
-        #search {
-            padding: 5px;
-            width: 200px;
-        }
-        #result {
-            display: none;
-            position: absolute;
-            background-color: white;
-            border: 1px solid #ccc;
-            width: 220px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        .dropdown-item {
-            padding: 10px;
-            border-bottom: 1px solid #eee;
-        }
-        .movie-thumbnail {
-            width: 50px;
-            height: 50px;
-            margin-right: 10px;
-        }
-        .movie-title {
-            font-weight: bold;
-        }
-        .details-btn {
-            display: block;
-            text-decoration: none;
-            color: blue;
-            margin-top: 5px;
-        }
-        .movie {
-            border: 1px solid #ccc;
-            padding: 10px;
-            margin: 10px;
-        }
-    </style>
-</head>
-{% block content %}
-  <div id="header">
-    <a href="{% url 'index' %}">|Home|</a>
-    <input type="text" id="search" placeholder="Search movies..." onkeyup="searchMovies()" />
-  </div>
-  <div id="result"></div>
-{% endblock %}
+{% load static %}
 
-{% block extra_js %}
-<script>
-  const movies = [
-    {% for movie in movies %}
-      {
-        id: "{{ movie.id }}",
-        title: "{{ movie.title }}",
-        description: "{{ movie.description }}",
-        image: "{% if movie.image %}{{ movie.image.url }}{% endif %}"
-      }{% if not forloop.last %},{% endif %}
-    {% endfor %}
-  ];
-
-  function searchMovies() {
-    const input = document.getElementById('search').value.toLowerCase().trim();
-    const resultContainer = document.getElementById('result');
-    resultContainer.innerHTML = '';
-    if (input === '') {
-        resultContainer.style.display = 'none';
-        return;
-    }
-    const filteredMovies = movies.filter(movie => movie.title.toLowerCase().includes(input));
-    if (filteredMovies.length > 0) {
-        resultContainer.style.display = 'block';
-        filteredMovies.forEach(movie => {
-            const movieItem = document.createElement('div');
-            movieItem.classList.add('dropdown-item');
-
-            const movieImg = document.createElement('img');
-            movieImg.src = movie.image;
-            movieImg.alt = movie.title;
-            movieImg.classList.add('movie-thumbnail');
-
-            const movieTitle = document.createElement('span');
-            movieTitle.textContent = movie.title;
-            movieTitle.classList.add('movie-title');
-
-            const detailsButton = document.createElement('a');
-            detailsButton.href = `/movies/${movie.id}/`;
-            detailsButton.textContent = 'Details';
-            detailsButton.classList.add('details-btn');
-
-            movieItem.appendChild(movieImg);
-            movieItem.appendChild(movieTitle);
-            movieItem.appendChild(detailsButton);
-            resultContainer.appendChild(movieItem);
-        });
-    } else {
-        const message = document.createElement('p');
-        message.textContent = 'No movies found.';
-        message.classList.add('dropdown-item');
-        resultContainer.appendChild(message);
-        resultContainer.style.display = 'block';
-    }
-  }
-
-  document.addEventListener("click", function(event) {
-    const resultContainer = document.getElementById('result');
-    if (!event.target.closest('#search') && !event.target.closest('#result')) {
-        resultContainer.style.display = 'none';
-    }
-  });
-
-  document.addEventListener("DOMContentLoaded", function() {
-    document.getElementById('result').style.display = 'none';
-  });
-</script>
-{% endblock %}
-
-<h2>Your Cart</h2>
-
-{% for item in cart_items %}
-    <div>
-        <p>{{ item.movie.title }} - ${{ item.movie.price }}</p>
-        {% if item.movie.id %}
-            <a href="{% url 'remove_from_cart' item.movie.id %}">|Remove|</a>
-            <a href="{% url 'movie_detail' item.movie.id %}">View Details|</a>
-        {% else %}
-            <p>Error: Movie ID missing</p>
-        {% endif %}
-    </div>
-{% empty %}
-    <p>Your cart is empty.</p>
-{% endfor %}
-
-<p><strong>Total Price:</strong> ${{ total_price }}</p>
-<a href="{% url 'index' %}">|Continue Shopping|</a>
-=======
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Your Cart</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart - TechFlix</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
-    <h1>Your Shopping Cart</h1>
+<body class="text-white bg-gray-900">
+
+    <!-- Navbar (Matches Index Page) -->
+    <header class="p-5 flex justify-between items-center bg-gray-800">
+        <img src="{% static 'movies/images/Techflix_logo.png' %}" height="50" alt="Techflix Logo" width="150">
+        
+        <div class="flex justify-center space-x-6 items-center">
+            <span><a href="{% url 'index' %}" class="hover:text-red-400">Home</a></span>
+            <span><a href="{% url 'view_cart' %}" class="hover:text-red-400">View Cart</a></span>
+            <span><a href="{% url 'account' %}" class="hover:text-red-400">Account</a></span>
+            
+            <form action="{% url 'logout' %}" method="POST">
+                {% csrf_token %}
+                <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-500">Logout</button>
+            </form>
+        </div>
+    </header>
     
-    {% if cart_items %}
-    <ul>
-        {% for item in cart_items %}
-            <li>
-                <h3>{{ item.movie.title }}</h3>
-                <p>{{ item.movie.description }}</p>
-                <p>Price: ${{ item.movie.price }}</p>
-                <p>Quantity: {{ item.quantity }}</p>
-                <p>Total: ${{ item.get_total_price }}</p>
-                <a href="{% url 'remove_from_cart' item.movie.id %}">Remove</a>
-            </li>
-        {% empty %}
-            <p>Your cart is empty.</p>
-        {% endfor %}
-    </ul>
-    <p>Total: ${{ cart.get_total_price }}</p>    
-    {% else %}
-        <p>Your cart is empty.</p>
+    <!-- ✅ Toast Notification -->
+    {% if messages %}
+        <div id="toast" class="fixed top-5 right-5 bg-green-600 text-white px-5 py-3 rounded shadow-lg transition-opacity opacity-100">
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+        </div>
+        <script>
+            setTimeout(function() {
+                document.getElementById("toast").style.opacity = "0";
+            }, 3000);
+        </script>
     {% endif %}
-    
-    <a href="{% url 'index' %}">Continue Shopping</a>
+
+    <!-- Cart Section -->
+    <section class="py-10 px-5">
+        <h1 class="text-3xl font-semibold text-center mb-6">Your Cart</h1>
+
+        {% if cart_items %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for item in cart_items %}
+                    <div class="bg-gray-800 p-4 rounded-lg shadow">
+                        <img src="{{ item.movie.image.url }}" alt="{{ item.movie.title }}" class="w-full h-48 object-cover rounded">
+                        <h3 class="text-lg font-semibold mt-2">{{ item.movie.title }}</h3>
+                        <p class="text-gray-400 text-sm">${{ item.movie.price }}</p>
+                        <p class="text-gray-300 mt-2">Quantity: {{ item.quantity }}</p>
+
+                        <!-- Update Quantity Form -->
+                        <form action="{% url 'add_to_cart' item.movie.id %}" method="POST">
+                            {% csrf_token %}
+                            <button class="mt-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500">+ Increase Quantity</button>
+                        </form>
+
+                        <!-- Remove from Cart -->
+                        <div class="mt-3 flex justify-between">
+                            <a href="{% url 'movie_detail' item.movie.id %}" class="text-blue-400 hover:text-blue-500">View Details</a>
+                            <a href="{% url 'remove_from_cart' item.movie.id %}" class="text-red-400 hover:text-red-500">Remove</a>
+                        </div>
+                    </div>
+                {% endfor %}
+                </div>
+            
+            <!-- Total Price Section -->
+            <div class="mt-8 text-center">
+                <p class="text-xl font-bold">Total Price: ${{ total_price }}</p>
+                <a href="{% url 'index' %}" class="mt-4 inline-block bg-red-600 text-white px-5 py-2 rounded hover:bg-red-500">Continue Shopping</a>
+                <form action="{% url 'place_order' %}" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="mt-5 bg-green-600 text-white px-5 py-2 rounded hover:bg-green-500">Place Order</button>
+                </form>
+                <script>
+                    function refreshPage() {
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000); // Refresh after 1 second
+                    }
+                </script>
+            </div>
+        {% else %}
+            <p class="text-gray-400 text-center text-lg">Your cart is empty.</p>
+            <div class="text-center mt-4">
+                <a href="{% url 'index' %}" class="bg-red-600 text-white px-5 py-2 rounded hover:bg-red-500">Browse Movies</a>
+            </div>
+        {% endif %}
+    </section>
+
+
 </body>
 </html>
->>>>>>> lnarayanan7

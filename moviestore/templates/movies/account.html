@@ -1,26 +1,62 @@
+{% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Account</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
-    <h1>Welcome, {{ user.username }}!</h1>
-    <p>Email: {{ user.email }}</p> <!-- ✅ Show user email -->
+<body class="text-white bg-gray-900">
 
-    <h2>Your Orders</h2>
-    {% if orders %}
+    <header class="p-5 flex justify-between items-center bg-gray-800">
+        <img src="{% static 'movies/images/Techflix_logo.png' %}" height="100" alt="Techflix Logo" width="300">
+        <div class="flex justify-center space-x-6 items-center">
+            <span><a href="{% url 'index' %}" class="hover:text-red-400">Home</a></span>
+            <span><a href="{% url 'view_cart' %}" class="hover:text-red-400">View Cart</a></span>
+            <span><a href="{% url 'account' %}" class="hover:text-red-400">Account</a></span>
+
+            <form action="{% url 'logout' %}" method="POST">
+                {% csrf_token %}
+                <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-500">Logout</button>
+            </form>
+        </div>
+    </header>
+
+    <section class="py-10 px-5">
+        <h1 class="text-3xl mb-5">Account Details</h1>
+        <div class="bg-gray-800 p-5 rounded shadow">
+            <p><strong>Username:</strong> {{ user.username }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p><strong>Member Since:</strong> {{ user.date_joined|date:"F d, Y" }}</p>
+        </div>
+    </section>
+
+
+    <section class="py-10 px-5">
+        <h2 class="text-2xl mb-5">Your Orders</h2>
+
+        {% if orders %}
+            <div class="space-y-5">
+                {% for order in orders %}
+                    <div class="bg-gray-800 p-5 rounded shadow">
+                        <p><strong>Order ID:</strong> #{{ order.id }}</p>
+                        <p><strong>Date:</strong> {{ order.created_at|date:"F d, Y" }}</p>
+                        <p><strong>Total Price:</strong> ${{ order.total_price }}</p>
+
+                        <h3 class="text-lg mt-3">Movies Purchased:</h4>
         <ul>
-        {% for order in orders %}
-            <li>Order #{{ order.id }} - Placed on {{ order.created_at }}</li>
-        {% endfor %}
+            {% for item in order.order_items.all %}
+            <li>{{ item.quantity }} x {{ item.movie.title }} - ${{ item.movie.price }}</li>
+            {% endfor %}
         </ul>
-    {% else %}
-        <p>You have not placed any orders yet.</p>
-    {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-gray-400">You haven't placed any orders yet.</p>
+        {% endif %}
+    </section>
 
-    <p>
-        <a href="{% url 'home' %}"> Home</a> | 
-        <a href="{% url 'logout' %}"> Logout</a>
-    </p>
 </body>
 </html>
