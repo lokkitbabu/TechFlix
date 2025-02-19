@@ -11,7 +11,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes
-
+from .forms import PasswordResetForm
 
 
 def home(request):
@@ -244,3 +244,24 @@ def movie_detail(request, movie_id):
 
 def about(request):
     return render(request, 'movies/about.html')
+
+
+def password_reset_view(request):
+    if request.method == "POST":
+        form = PasswordResetForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data["username"]
+            new_password = form.cleaned_data["new_password"]
+
+            try:
+                user = User.objects.get(username=username)
+                user.set_password(new_password)
+                user.save()
+                messages.success(request, "Password reset successful. You can now log in with your new password.")
+                return redirect("login")  # Make sure the login URL name is correct in your project
+            except User.DoesNotExist:
+                messages.error(request, "User not found. Please enter a valid username.")
+    else:
+        form = PasswordResetForm()
+
+    return render(request, "movies/password_reset_form.html", {"form": form})
